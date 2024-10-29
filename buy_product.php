@@ -1,5 +1,5 @@
 <?php
-// Hata ayıklama modunu aç
+// Hata ayıklama modu
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -13,23 +13,28 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Kullanıcı ID'sini al ve ürün ID'sini doğrula
+// Kullanıcı ve ürün ID doğrulama
 $user_id = $_SESSION['user_id'];
 $product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// Ürün bilgilerini veritabanından çek
+if ($product_id <= 0) {
+    echo "Geçersiz ürün.";
+    exit;
+}
+
+// Ürün bilgilerini çek
 $stmt = $conn->prepare("SELECT * FROM products WHERE id = ?");
 $stmt->execute([$product_id]);
 $product = $stmt->fetch();
 
 if ($product) {
-    // Kullanıcının bakiyesi yeterli mi?
+    // Kullanıcı bakiyesi
     $stmt = $conn->prepare("SELECT balance FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $user_balance = $stmt->fetchColumn();
 
     if ($user_balance >= $product['price']) {
-        // Kullanıcının bakiyesini güncelle
+        // Bakiyeyi güncelle
         $new_balance = $user_balance - $product['price'];
         $stmt = $conn->prepare("UPDATE users SET balance = ? WHERE id = ?");
         $stmt->execute([$new_balance, $user_id]);
@@ -39,6 +44,6 @@ if ($product) {
         echo "Yetersiz bakiye.";
     }
 } else {
-    echo "Geçersiz ürün.";
+    echo "Ürün bulunamadı.";
 }
 ?>

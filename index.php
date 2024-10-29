@@ -2,182 +2,167 @@
 include 'auth.php'; // Oturum kontrolü
 include 'db.php'; // Veritabanı bağlantısı
 
-// Seçilen kategoriye göre filtreleme
 $selected_category = isset($_GET['category']) ? $_GET['category'] : 'Esrar';
+$limit = 50;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
 
-// Sayfalama ayarları
-$limit = 50; // Her sayfada gösterilecek maksimum ürün sayısı
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Geçerli sayfa numarası
-$offset = ($page - 1) * $limit; // Veritabanı sorgusu için başlangıç noktası
-
-// Seçilen kategoriye göre ürünleri çek
+// Ürünleri çek
 $query = "SELECT * FROM products WHERE category = :category LIMIT $limit OFFSET $offset";
 $stmt = $conn->prepare($query);
 $stmt->bindParam(':category', $selected_category, PDO::PARAM_STR);
 $stmt->execute();
 $products = $stmt->fetchAll();
 
-// Toplam ürün sayısını al
+// Toplam ürün sayısını çek
 $totalProductsStmt = $conn->prepare("SELECT COUNT(*) FROM products WHERE category = :category");
 $totalProductsStmt->bindParam(':category', $selected_category, PDO::PARAM_STR);
 $totalProductsStmt->execute();
 $totalProducts = $totalProductsStmt->fetchColumn();
-
-// Toplam sayfa sayısını hesapla
-$totalPages = ceil($totalProducts / $limit);
+$totalPages = ($totalProducts > 0) ? ceil($totalProducts / $limit) : 1;
 
 // Kullanıcı bilgilerini çek
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch();
+
+// Duyuruları çek
+$announcementsStmt = $conn->query("SELECT * FROM announcements ORDER BY created_at DESC LIMIT 5");
+$announcements = $announcementsStmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <title>Anasayfa - <?php echo $selected_category; ?></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>PRİZRAKOV Anasayfa</title>
     <style>
         body {
-            background-image: url('https://img.pikbest.com/wp/202345/indoor-plant-cannabis-plants-growing-in-the-dark_9604120.jpg!w700wp');
+            background: url('https://r.resimlink.com/HWqVhKf.jpg') no-repeat center center fixed;
             background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
         .navbar {
-            width: 100%;
-            z-index: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0.5rem 1rem;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 10px 20px;
         }
-        .navbar-brand {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #000;
+        .navbar-brand img {
+            max-width: 150px;
         }
-        .user-controls {
-            position: absolute;
-            right: 20px;
+        .announcement-container {
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            color: #fff;
+        }
+        .announcement {
+            background-color: rgba(0, 0, 0, 0.7);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
         }
         .products-container {
-            width: 90%;
-            max-width: 1200px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border: 2px solid black;
-            border-radius: 8px;
-            padding: 20px;
             margin-top: 20px;
         }
         .product-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            background-color: rgba(255, 255, 255, 0.8);
-            height: 100%;
-            transition: box-shadow 0.3s;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            margin: 15px;
+            border-radius: 10px;
+            text-align: center;
         }
         .product-card img {
             width: 100%;
-            height: 150px;
+            height: 200px;
             object-fit: cover;
-            border-radius: 5px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .product-card h5, .product-card p {
+            color: black;
+        }
+        .category-buttons .btn {
+            color: black;
+            font-weight: bold;
         }
         .pagination {
             display: flex;
             justify-content: center;
-            margin-top: 20px;
+            margin: 30px 0;
         }
         .pagination a {
             margin: 0 5px;
             padding: 8px 12px;
-            border: 1px solid black;
+            background: #004d00;
+            color: #fff;
             border-radius: 5px;
             text-decoration: none;
-            color: black;
-            transition: background-color 0.3s;
         }
-        .pagination a:hover, .pagination a.active {
-            background-color: black;
-            color: white;
+        .pagination a.active, .pagination a:hover {
+            background-color: #00ff00;
+            color: #000;
         }
     </style>
-    <!-- jQuery ve Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 
+<!-- Logo Üstü Resim -->
+<div class="text-center">
+    <img src="https://r.resimlink.com/D9XwtYK6HfBo.png" alt="Logo Resmi" style="width: 100%; height: auto;">
+</div>
+
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg">
-    <a class="navbar-brand" href="#">PRİZRAKOV</a>
-    <div class="user-controls">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item"><a class="nav-link" href="#">Merhaba, <?php echo htmlspecialchars($user['username']); ?></a></li>
-            <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Çıkış Yap</a></li>
-        </ul>
+    <div class="ml-auto">
+        <a href="member_panel.php" class="btn btn-info mx-2">Üye Paneli</a>
+        <a href="logout.php" class="btn btn-danger">Çıkış Yap</a>
     </div>
 </nav>
 
-<div class="products-container mt-5">
-    <h2 class="text-center mb-4"><?php echo $selected_category; ?></h2>
-    <!-- Kategori Seçimi -->
-    <div class="text-center mb-4">
-        <a href="index.php?category=Esrar" class="btn btn-outline-dark">Esrar</a>
-        <a href="index.php?category=Kokain" class="btn btn-outline-dark">Kokain</a>
-    </div>
+<!-- Duyurular Bölümü -->
+<div class="container announcement-container mt-4">
+    <h2 class="text-center">Duyurular</h2>
+    <?php if (!empty($announcements)): ?>
+        <?php foreach ($announcements as $announcement): ?>
+            <div class="announcement">
+                <h5><?php echo $announcement['title']; ?></h5>
+                <p><?php echo $announcement['content']; ?></p>
+                <small><?php echo date('d/m/Y', strtotime($announcement['created_at'])); ?></small>
+            </div>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <p class="text-center">Henüz duyuru yok.</p>
+    <?php endif; ?>
+</div>
 
+<!-- Kategori Seçimi -->
+<div class="category-buttons text-center">
+    <a href="index.php?category=Esrar" class="btn btn-outline-light">Esrar</a>
+    <a href="index.php?category=Kokain" class="btn btn-outline-light">Kokain</a>
+</div>
+
+<!-- Ürün Listesi -->
+<div class="container products-container">
     <div class="row">
         <?php if (!empty($products)): ?>
             <?php foreach ($products as $product): ?>
-                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                     <div class="product-card">
                         <img src="assets/images/<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>">
-                        <h5 class="text-center"><?php echo $product['name']; ?></h5>
-                        <p class="text-center text-muted">$<?php echo number_format($product['price'], 2); ?></p>
-                        <div class="text-center">
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#productModal<?php echo $product['id']; ?>">
-                                Satın Al
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Ürün Detay Modal -->
-                <div class="modal fade" id="productModal<?php echo $product['id']; ?>" tabindex="-1" aria-labelledby="productModalLabel<?php echo $product['id']; ?>" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="productModalLabel<?php echo $product['id']; ?>"><?php echo $product['name']; ?></h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-                            </div>
-                            <div class="modal-body">
-                                <img src="assets/images/<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>" class="img-fluid mb-3">
-                                <p><?php echo $product['description']; ?></p>
-                                <p class="text-muted">Fiyat: $<?php echo number_format($product['price'], 2); ?></p>
-                            </div>
-                            <div class="modal-footer">
-                                <a href="buy_product.php?id=<?php echo $product['id']; ?>" class="btn btn-success">Satın Al</a>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                            </div>
-                        </div>
+                        <h5><?php echo $product['name']; ?></h5>
+                        <p>$<?php echo number_format($product['price'], 2); ?></p>
+                        <a href="buy_product.php?id=<?php echo $product['id']; ?>" class="btn btn-success btn-block">Satın Al</a>
                     </div>
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
-            <p class="text-center">Henüz ürün yok.</p>
+            <p class="text-center">Henüz ürün bulunamadı.</p>
         <?php endif; ?>
     </div>
 

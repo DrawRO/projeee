@@ -2,28 +2,22 @@
 session_start();
 include '../db.php';
 
-// Hata ayıklama modunu aç
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 // Admin oturum kontrolü
 if (!isset($_SESSION['admin_id'])) {
-    header('Location: login.php'); // Admin giriş sayfasına yönlendir
+    header('Location: login.php');
     exit;
 }
 
-// Toplam kullanıcı sayısı
+// Toplam kullanıcı ve ürün sayısını al
 $userCountStmt = $conn->query("SELECT COUNT(*) FROM users");
 $totalUsers = $userCountStmt->fetchColumn();
 
-// Mevcut ürün sayısı
 $productCountStmt = $conn->query("SELECT COUNT(*) FROM products");
 $totalProducts = $productCountStmt->fetchColumn();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,7 +26,6 @@ $totalProducts = $productCountStmt->fetchColumn();
     <style>
         body {
             background-color: #f8f9fa;
-            font-family: Arial, sans-serif;
         }
         .admin-content {
             margin-left: 240px;
@@ -45,21 +38,15 @@ $totalProducts = $productCountStmt->fetchColumn();
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             margin-bottom: 20px;
             background-color: #fff;
-            transition: box-shadow 0.3s;
-        }
-        .admin-card:hover {
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-        }
-        .admin-card h4 {
-            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
 
-<!-- Ortak Yan Menü Dahil Edilir -->
-<?php include 'sidebar.php'; ?>
+<!-- Yan Menü -->
+<?php include 'sidebar.php'; ?> <!-- Sidebar burada dahil edildi -->
 
+<!-- Ana İçerik -->
 <div class="admin-content">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="#">Yönetim Paneli</a>
@@ -76,7 +63,7 @@ $totalProducts = $productCountStmt->fetchColumn();
                 </div>
             </div>
 
-            <!-- Mevcut Ürün Sayısı Kartı -->
+            <!-- Ürün Sayısı Kartı -->
             <div class="col-md-6">
                 <div class="admin-card">
                     <h4>Mevcut Ürün Sayısı</h4>
