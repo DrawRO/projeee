@@ -19,6 +19,7 @@ if (!$product) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="robots" content="noindex, nofollow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
@@ -52,7 +53,18 @@ if (!$product) {
         <h2 class="text-center"><?php echo htmlspecialchars($product['name']); ?></h2>
         <img src="assets/images/<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-image">
         <p class="mt-3"><?php echo htmlspecialchars($product['description']); ?></p>
-        <p class="text-muted">Fiyat: $<?php echo number_format($product['price'], 2); ?></p>
+        
+        <!-- Ağırlık Seçimi -->
+        <div class="form-group">
+            <label for="weight">Ağırlık Seçimi (gram):</label>
+            <select id="weight" class="form-control" onchange="updatePrice()">
+                <option value="100">5g</option>
+                <option value="250">10g</option>
+            </select>
+        </div>
+
+        <!-- Fiyat -->
+        <p class="text-muted">Fiyat: $<span id="price"><?php echo number_format($product['price'], 2); ?></span></p>
         
         <!-- Satın Al Butonu -->
         <div class="text-center mt-4">
@@ -61,6 +73,15 @@ if (!$product) {
     </div>
 </div>
 
-<script src="assets/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<script>
+    // Ürün taban fiyatı (örneğin, 100g fiyatı olarak kabul ediliyor)
+    const basePrice = <?php echo $product['price']; ?>;
+
+    function updatePrice() {
+        const weight = document.getElementById('weight').value;
+        const newPrice = (basePrice * weight) / 100; // Ağırlığa göre fiyatı hesapla
+        document.getElementById('price').textContent = newPrice.toFixed(2);
+    }
+</script>
+
+<script src="assets/js/bootstrap.bundle.min.js"></scrip

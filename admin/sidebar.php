@@ -3,6 +3,7 @@
     <a href="add_admin.php" style="display: block; padding: 15px; color: white; text-decoration: none;">Admin Ekle</a>
     <a href="add_product.php" style="display: block; padding: 15px; color: white; text-decoration: none;">Ürün Ekle</a>
     <a href="view_products.php" style="display: block; padding: 15px; color: white; text-decoration: none;">Ürünleri Görüntüle</a>
-    <a href="add_announcement.php" style="display: block; padding: 15px; color: white; text-decoration: none;">Duyuru Ekle</a> <!-- Yeni Duyuru Ekle Butonu -->
+    <a href="custom_product_management.php" style="display: block; padding: 15px; color: white; text-decoration: none;">Özel Ürün Yönetimi</a> <!-- Yeni eklenen menü öğesi -->
+	<a href="custom_product_details.php" style="display: block; padding: 15px; color: white; text-decoration: none;">Özel Konum Resim Ekleme</a> 
     <a href="logout.php" style="display: block; padding: 15px; color: white; text-decoration: none;">Çıkış Yap</a>
 </div>

@@ -27,6 +27,36 @@ $totalProducts = $productCountStmt->fetchColumn();
         body {
             background-color: #f8f9fa;
         }
+        .sidebar {
+            height: 100vh;
+            width: 260px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #2a2a40;
+            color: #e4e4e7;
+            padding-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+        }
+        .sidebar a {
+            padding: 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #e4e4e7;
+            display: flex;
+            align-items: center;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        .sidebar a:hover {
+            background-color: #4a4a6a;
+            color: white;
+            transform: translateX(5px);
+        }
         .admin-content {
             margin-left: 240px;
             padding: 20px;
@@ -40,11 +70,22 @@ $totalProducts = $productCountStmt->fetchColumn();
             background-color: #fff;
         }
     </style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
 
 <!-- Yan Menü -->
-<?php include 'sidebar.php'; ?> <!-- Sidebar burada dahil edildi -->
+<div class="sidebar">
+    <a href="index.php">Dashboard</a>
+    <a href="add_admin.php">Admin Ekle</a>
+    <a href="add_product.php">Ürün Ekle</a>
+    <a href="view_products.php">Ürünleri Görüntüle</a>
+	<a href="custom_product_management.php">Özel Ürün Yönetimi</a>
+	<a href="custom_product_details.php">Özel Konum Resim Ekleme</a>
+    <a href="logout.php">Çıkış Yap</a>
+</div>
 
 <!-- Ana İçerik -->
 <div class="admin-content">
